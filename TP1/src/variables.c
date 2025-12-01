@@ -2,7 +2,6 @@
 
 int main(void)
 {
-    // ----- Types entiers -----
     signed char s_char = -100;
     unsigned char u_char = 200;
 
@@ -18,12 +17,10 @@ int main(void)
     signed long long int s_ll = -9000000000000000000LL;
     unsigned long long int u_ll = 18000000000000000000ULL;
 
-    // ----- Types flottants -----
     float f = 3.14f;
     double d = 2.718281828459;
     long double ld = 1.234567890123456789L;
 
-    // ----- Affichage -----
     printf("signed char          : %d\n", s_char);
     printf("unsigned char        : %u\n", u_char);
 
@@ -45,3 +42,4 @@ int main(void)
 
     return 0;
 }
+
