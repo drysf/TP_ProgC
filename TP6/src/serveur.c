@@ -47,12 +47,25 @@ double degreesToRadians(double degrees)
 int plot(char *data)
 {
   int i;
-  char *saveptr = NULL;
-  char *str = data;
-  char *token = strtok_r(str, ",", &saveptr);
-  const int num_colors = 10;
+  char *p = strstr(data, "\"valeurs\":[");
+  if (!p) return 1;
+  
+  p += 11;
+  char *num_start = strchr(p, '"');
+  if (!num_start) return 1;
+  num_start++;
+  char *num_end = strchr(num_start, '"');
+  if (!num_end) return 1;
+  
+  char num_str[10];
+  strncpy(num_str, num_start, num_end - num_start);
+  num_str[num_end - num_start] = '\0';
+  
+  int num_colors = atoi(num_str);
+  if (num_colors < 1) num_colors = 1;
+  if (num_colors > 30) num_colors = 30;
 
-  double angles[num_colors];
+  double angles[30];
   memset(angles, 0, sizeof(angles));
 
   FILE *svg_file = fopen(svg_file_path, "w");
@@ -72,16 +85,20 @@ int plot(char *data)
 
   double start_angle = -90.0;
 
-  str = NULL;
+  p = num_end + 1;
   i = 0;
-  while (1)
+  while (i < num_colors)
   {
-    token = strtok_r(str, ",", &saveptr);
-    if (token == NULL)
-    {
-      break;
-    }
-    str = NULL;
+    char *color_start = strchr(p, '#');
+    if (!color_start) break;
+    
+    char *color_end = strchr(color_start, '"');
+    if (!color_end) break;
+    
+    char color[10];
+    strncpy(color, color_start, color_end - color_start);
+    color[color_end - color_start] = '\0';
+    
     angles[i] = 360.0 / num_colors;
 
     double end_angle = start_angle + angles[i];
@@ -95,9 +112,10 @@ int plot(char *data)
     double y2 = center_y + radius * sin(end_angle_rad);
 
     fprintf(svg_file, "  <path d=\"M%.2f,%.2f A%.2f,%.2f 0 0,1 %.2f,%.2f L%.2f,%.2f Z\" fill=\"%s\" />\n",
-            x1, y1, radius, radius, x2, y2, center_x, center_y, token);
+            x1, y1, radius, radius, x2, y2, center_x, center_y, color);
 
     start_angle = end_angle;
+    p = color_end + 1;
     i++;
   }
 
@@ -227,8 +245,4 @@ int main()
       return (EXIT_FAILURE);
     }
 
-    recois_envoie_message(client_socket_fd, data);
-  }
-
-  return 0;
-}
+    recois_envoie_message(client_socket_fd, data);
